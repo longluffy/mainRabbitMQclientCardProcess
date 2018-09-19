@@ -1,10 +1,22 @@
 package testRabbitMQ.sender;
 
 import com.rabbitmq.client.ConnectionFactory;
+
+import cardprocess.hibernate.Cardservices;
+import cardprocess.hibernate.MyViettelAccount;
+
 import com.rabbitmq.client.Connection;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.rabbitmq.client.Channel;
 
@@ -37,8 +49,35 @@ public class RobuxSender {
 		channel.queueDeclare(QUEUE_NAME, false, false, false, null);
 
 		// message format : [serial]_[pin]
-		 String message = idx+"_"+serial+"_"+pin;
-		
+
+		String pathxlsx = "D:\\4thenap10k19092018.xlsx";
+		File xlsxfile = new File(pathxlsx);
+		FileInputStream fsIP = null;
+		XSSFWorkbook wb = null;
+		XSSFSheet worksheet = null;
+		try {
+			fsIP = new FileInputStream(xlsxfile);
+			wb = new XSSFWorkbook(fsIP);
+			worksheet = wb.getSheetAt(0);
+
+		} catch (Exception e) {
+
+		}
+
+		for (int i = 2; i < 5; i++) {
+			Row row = worksheet.getRow(i);
+
+			Cell cellpin = row.getCell(1);
+			Cell cellseri = row.getCell(2);
+
+			System.out.println(cellpin.getStringCellValue());
+			System.out.println(cellseri.getStringCellValue());
+			String message = idx + "_" + cellseri.getStringCellValue() + "_" + cellpin.getStringCellValue();
+
+			channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+			System.out.println(" [x] Sent '" + message + "'");
+
+		}
 //		String message1 ="371_10001278845119_711993204354040";
 //		String message2 ="325_10001357226302_518223892571861";
 //		String message3 ="495_10001387143975_919897185276217";
@@ -68,9 +107,6 @@ public class RobuxSender {
 //		
 //		System.out.println(" [x] Sent '" + message7 + "'");
 
-		channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
-		System.out.println(" [x] Sent '" + message + "'");
-		
 		channel.close();
 		connection.close();
 		System.exit(0);

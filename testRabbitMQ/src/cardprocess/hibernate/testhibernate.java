@@ -9,23 +9,18 @@ public class testhibernate {
 
 	public static void main(String[] args) {
 		
-		Cardservices cs = new Cardservices();
+		Cardservices cardService = new Cardservices();
+		MyViettelAccount myvtAcc = cardService.selectAccountForNapThe();
+		System.out.println(myvtAcc.getUsername() + "_"+ myvtAcc.getEnabled());
 		
-		MyViettelAccount acc = cs.selectAccountForCheckcard();
-		System.out.println(acc.username + acc.checked);
+		MyViettelAccount acc = cardService.selectAccountForNapThe();
+		System.out.println(acc.getUsername() + "_"+ acc.getEnabled());
 		
+		cardService.updateMyviettelAcc(myvtAcc);
+		System.out.println(myvtAcc.getUsername() + "_"+ myvtAcc.getEnabled());
 		
-		cs.checkCountMvtaccount(acc);
-		//System.out.println(acc.username + acc.checked);
-
-		
-		CardProcess card = cs.getCardInfobyId(89);
-		Gson gson = new Gson();
-		String jsonInString = gson.toJson(card);
-		
-		System.out.println(jsonInString);
-		
-		
+		cardService.updateMyviettelAcc(acc);
+		System.out.println(acc.getUsername() + "_"+ acc.getEnabled());
 
 	}
 }

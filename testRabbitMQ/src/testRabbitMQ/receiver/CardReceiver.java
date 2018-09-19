@@ -24,7 +24,7 @@ public class CardReceiver {
 	public static Cardservices cardService;
 
 	private final static String RECEIVE_QUEUE_NAME = "robux_request";
-	private final static String RESPONSE_QUEUE_NAME = "robux_result_res";
+	private final static String RESPONSE_QUEUE_NAME = "robux_result";
 
 	public static void main(String[] argv)
 			throws java.io.IOException, java.lang.InterruptedException, TimeoutException {
@@ -67,45 +67,58 @@ public class CardReceiver {
 
 					cp.setSrc_msg(message);
 					cp.setSrc_msg(message.split("_")[0]);
-					String serialstring = message.split("_")[1];
 
+					cp.setCardavailable(1);
+
+					String serialstring = message.split("_")[1];
 					cp.setSerial(serialstring);
-					if (serialstring.isEmpty() || serialstring.length() != 14) {
-						cp.setCardavailable(0);
-						cp.setCardcheckresult("serial phải chứa 14 ký tự số");
-						throw new NumberFormatException();
-					} else {
-						Long serialnum = Long.valueOf(serialstring);
-					}
 
 					String pinString = message.split("_")[2];
 					cp.setPin(pinString);
-					if (pinString.isEmpty() || pinString.length() != 15) {
-						cp.setCardavailable(0);
-						cp.setCardcheckresult("pin phải chứa 15 ký tự số");
-						throw new NumberFormatException();
-					} else {
-						Long pinStringnum = Long.valueOf(pinString);
-					}
 
 					// set received time
 					cp.setReceivetime(new Time(System.currentTimeMillis()));
 
-					CardProcess ccp = cardService.getCardInfoFromSerial(serialstring);
+					if (serialstring.isEmpty() || serialstring.length() != 14) {
+						cp.setCardavailable(0);
+						cp.setCardcheckresult("serial phải chứa 14 ký tự số");
+					} else {
+						try {
+							Long serialnum = Long.valueOf(serialstring);
+						} catch (Exception e) {
+							cp.setCardavailable(0);
+							cp.setCardcheckresult("serial format không hợp lệ");
+						}
+					}
+
+					if (pinString.isEmpty() || pinString.length() != 15) {
+						cp.setCardavailable(0);
+						cp.setCardcheckresult("pin phải chứa 15 ký tự số");
+					} else {
+						try {
+							Long pinStringnum = Long.valueOf(pinString);
+						} catch (Exception e) {
+							cp.setCardavailable(0);
+							cp.setCardcheckresult("pin format không hợp lệ");
+						}
+					}
+
+					CardProcess ccp = cardService.checkCardExistsOnsystem(cp);
 					if (null != ccp) {
 						cp.setCardvalue(ccp.getCardvalue());
 						cp.setCardavailable(0);
-						cp.setCardcheckresult("thẻ cào đã tồn tại trên hệ thống");
-						responseToRobux(factory, cp);
-
-						return;
+						cp.setCardcheckresult("thẻ cào đã được nạp trước đó trên hệ thống");
 					}
 
 					CardProcess cardAdded = cardService.addCardProcess(cp);
 
-					// Check Card value and availability
-					CheckcardServiceRequest checkcardServices = new CheckcardServiceRequest();
-					checkcardServices.checkCard(cardAdded);
+					if (null == cp.getCardcheckresult() || cp.getCardcheckresult().isEmpty()) {
+						// Check Card value and availability
+						CheckcardServiceRequest checkcardServices = new CheckcardServiceRequest();
+						checkcardServices.checkCard(cardAdded);
+					} else {
+						responseToRobux(factory, cp);
+					}
 					System.out.println("---------------------");
 				} catch (IndexOutOfBoundsException e) {
 					// TODO update result to db
@@ -113,19 +126,10 @@ public class CardReceiver {
 					cp.setCardavailable(0);
 					cp.setCardcheckresult("request sai dinh dang");
 					responseToRobux(factory, cp);
-				} catch (NumberFormatException e) {
-					// TODO update result to db
-					e.printStackTrace();
-					cp.setCardavailable(0);
-					if (null == cp.getCardcheckresult()) {
-						cp.setCardcheckresult("pin hoac serial khong hop le");
-					}
-					responseToRobux(factory, cp);
-
 				} catch (TimeoutException e) {
 					// TODO update result to db
 					System.out.println("cannot connect to checkcard services");
-					cp.setCardcheckresult("khong the check the");
+					cp.setCardcheckresult("lỗi hệ thống check thẻ");
 					e.printStackTrace();
 					responseToRobux(factory, cp);
 				}

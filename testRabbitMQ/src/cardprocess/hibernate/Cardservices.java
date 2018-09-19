@@ -64,23 +64,23 @@ public class Cardservices {
 		}
 
 		if (null != cardinfo.getChargedto()) {
-			cpupdate.setCardprocessresult(cardinfo.getChargedto());
+			cpupdate.setChargedto(cardinfo.getChargedto());
 		}
 
 		if (null != cardinfo.getChargedby()) {
-			cpupdate.setCardprocessresult(cardinfo.getChargedby());
+			cpupdate.setChargedby(cardinfo.getChargedby());
 		}
 
 		if (null != cardinfo.getChargedtime()) {
-			cpupdate.setCardprocessresult(cardinfo.getChargedtime());
+			cpupdate.setChargedtime(cardinfo.getChargedtime());
 		}
 
 		if (null != cardinfo.getSrc_msg()) {
-			cpupdate.setCardprocessresult(cardinfo.getSrc_msg());
+			cpupdate.setSrc_msg(cardinfo.getSrc_msg());
 		}
 
 		if (null != cardinfo.getUser_aded()) {
-			cpupdate.setCardprocessresult(cardinfo.getUser_aded());
+			cpupdate.setUser_aded(cardinfo.getUser_aded());
 		}
 
 		session.update(cpupdate);
@@ -212,6 +212,12 @@ public class Cardservices {
 		List<MyViettelAccount> result = cr.list();
 
 		MyViettelAccount acc = result.get(0);
+
+		session.beginTransaction();
+		acc.setEnabled(2);
+		session.saveOrUpdate(acc);
+		session.getTransaction().commit();
+		session.flush();
 		return acc;
 
 	}
@@ -233,6 +239,12 @@ public class Cardservices {
 			e.printStackTrace();
 		}
 		ChargeAccount acc = result.get(0);
+		
+		session.beginTransaction();
+		acc.setCompleted(2);
+		session.saveOrUpdate(acc);
+		session.getTransaction().commit();
+		session.flush();
 		return acc;
 
 	}
@@ -240,9 +252,10 @@ public class Cardservices {
 	public void updateMyviettelAcc(MyViettelAccount acc) {
 
 		session.beginTransaction();
-
+		acc.setEnabled(1);
 		session.saveOrUpdate(acc);
 		session.getTransaction().commit();
+		session.flush();
 
 	}
 
@@ -286,7 +299,7 @@ public class Cardservices {
 		return cp;
 	}
 
-	public void updateReceiveAccount(ChargeAccount receiveAccount, CardProcess cardSaved) {
+	public void updateAmountReceiveAccount(ChargeAccount receiveAccount, CardProcess cardSaved) {
 		session.beginTransaction();
 		BigInteger newcharged = receiveAccount.getChargedAmount().add(cardSaved.getCardvalue());
 		receiveAccount.setChargedAmount(newcharged);
@@ -295,6 +308,8 @@ public class Cardservices {
 
 		if (receiveAccount.getAmount() == receiveAccount.getChargedAmount()) {
 			receiveAccount.setCompleted(1);
+		}else {
+			receiveAccount.setCompleted(0);
 		}
 		session.saveOrUpdate(receiveAccount);
 		session.getTransaction().commit();
@@ -315,6 +330,63 @@ public class Cardservices {
 		session.getTransaction().commit();
 		session.flush();
 		return account;
+	}
+
+	public MyViettelAccount getmyViettelAccById(long myvtAccId) {
+		Criteria cr = session.createCriteria(MyViettelAccount.class);
+		cr.add(Restrictions.eq("id", myvtAccId));
+		cr.setMaxResults(1);
+		List<MyViettelAccount> result = cr.list();
+
+		MyViettelAccount acc = result.get(0);
+		return acc;
+	}
+
+	public ChargeAccount getChargeAccountById(int receiveAccountId) {
+		Criteria cr = session.createCriteria(ChargeAccount.class);
+		cr.add(Restrictions.eq("id", receiveAccountId));
+		cr.setMaxResults(1);
+		List<ChargeAccount> result = cr.list();
+
+		ChargeAccount acc = result.get(0);
+		return acc;
+	}
+
+	public void updateChargeAcctoTratruoc(ChargeAccount receiveAccount) {
+		// TODO Auto-generated method stub
+		session.beginTransaction();
+		receiveAccount.setCompleted(3);
+		session.saveOrUpdate(receiveAccount);
+		session.getTransaction().commit();
+		session.flush();
+	}
+
+	public void updateReleaseReceiveAccount(ChargeAccount receiveAccount) {
+		session.beginTransaction();
+		receiveAccount.setCompleted(0);
+		session.save(receiveAccount);
+		session.getTransaction().commit();
+		session.flush();		
+	}
+
+	public CardProcess checkCardExistsOnsystem(CardProcess card) {
+		session.flush();
+
+		Criteria cr = session.createCriteria(CardProcess.class);
+		cr.add(Restrictions.eq("serial", card.getSerial()));
+		cr.add(Restrictions.eq("pin", card.getPin()));
+		cr.add(Restrictions.eq("cardprocesssuccess", 1));
+		cr.addOrder(Order.desc("receivetime"));
+
+		List<CardProcess> result = cr.list();
+
+		if (result.size() != 0) {
+			CardProcess cpupdate = result.get(0);
+			return cpupdate;
+
+		} else {
+			return null;
+		}
 	}
 
 }

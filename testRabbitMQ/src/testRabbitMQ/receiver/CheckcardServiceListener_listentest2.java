@@ -27,11 +27,11 @@ import cardprocess.hibernate.ChargeAccount;
 import cardprocess.hibernate.MyViettelAccount;
 import testRabbitMQ.sender.CheckcardServiceRequest;
 
-public class CheckcardServiceListener_listentest {
+public class CheckcardServiceListener_listentest2 {
 	private final static String CHECKCARD_RESPONSE_QUEUE_NAME = "CheckcardService_response";
 	private final static String RESPONSE_QUEUE_NAME = "robux_result";
 	private static Cardservices cardService;
-	private final static String PATH_TO_EXE_SELENIUM = "C:\\Users\\Admin\\git\\mainRabbitMQClient\\testRabbitMQ\\tool\\phantomjs\\phantomjs.exe";
+	private final static String PATH_TO_EXE_SELENIUM = "C:\\Users\\Admin\\git\\mainRabbitMQClient\\testRabbitMQ\\tool\\phantomjs2\\phantomjs.exe";
 
 	public static void main(String[] argv)
 			throws java.io.IOException, java.lang.InterruptedException, TimeoutException {
