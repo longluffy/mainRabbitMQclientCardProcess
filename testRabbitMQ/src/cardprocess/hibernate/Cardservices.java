@@ -221,6 +221,28 @@ public class Cardservices {
 		return acc;
 
 	}
+	
+	
+	public MyViettelAccount selectAccountForNapTheAndroid() {
+
+		Criteria cr = session.createCriteria(MyViettelAccount.class);
+		cr.add(Restrictions.lt("charged", 5));
+		cr.add(Restrictions.eq("checked", 1));
+		cr.add(Restrictions.eq("enabled", 1));
+
+		cr.setMaxResults(1);
+		List<MyViettelAccount> result = cr.list();
+
+		MyViettelAccount acc = result.get(0);
+
+		session.beginTransaction();
+		acc.setEnabled(2);
+		session.saveOrUpdate(acc);
+		session.getTransaction().commit();
+		session.flush();
+		return acc;
+
+	}
 
 	public ChargeAccount selectReceiveAccount(BigInteger cardValue) {
 

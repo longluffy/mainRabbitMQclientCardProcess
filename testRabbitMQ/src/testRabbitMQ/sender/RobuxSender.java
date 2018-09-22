@@ -23,6 +23,7 @@ import com.rabbitmq.client.Channel;
 public class RobuxSender {
 
 	private final static String QUEUE_NAME = "robux_request";
+	private final static String QUEUE_NAME_result = "robux_result";
 
 	public static void main(String[] args) throws IOException, TimeoutException {
 
@@ -32,10 +33,6 @@ public class RobuxSender {
 		String virtualHost = "/";
 		int portNumber = 5672;
 		String hostName = "27.72.30.109";
-
-		String idx = "33333";
-		String pin = "915295800572464";
-		String serial = "10001785731186";
 
 		factory.setUsername(userName);
 		factory.setPassword(password);
@@ -50,43 +47,50 @@ public class RobuxSender {
 
 		// message format : [serial]_[pin]
 
-		String pathxlsx = "D:\\4thenap10k19092018.xlsx";
-		File xlsxfile = new File(pathxlsx);
-		FileInputStream fsIP = null;
-		XSSFWorkbook wb = null;
-		XSSFSheet worksheet = null;
-		try {
-			fsIP = new FileInputStream(xlsxfile);
-			wb = new XSSFWorkbook(fsIP);
-			worksheet = wb.getSheetAt(0);
+//		String pathxlsx = "D:\\4thenap10k19092018.xlsx";
+//		File xlsxfile = new File(pathxlsx);
+//		FileInputStream fsIP = null;
+//		XSSFWorkbook wb = null;
+//		XSSFSheet worksheet = null;
+//		try {
+//			fsIP = new FileInputStream(xlsxfile);
+//			wb = new XSSFWorkbook(fsIP);
+//			worksheet = wb.getSheetAt(0);
+//
+//		} catch (Exception e) {
+//
+//		}
 
-		} catch (Exception e) {
+//		for (int i = 2; i < 5; i++) {
+//			Row row = worksheet.getRow(i);
+//
+//			Cell cellpin = row.getCell(1);
+//			Cell cellseri = row.getCell(2);
+//
+//			System.out.println(cellpin.getStringCellValue());
+//			System.out.println(cellseri.getStringCellValue());
+//			String message = idx + "_" + cellseri.getStringCellValue() + "_" + cellpin.getStringCellValue();
+//
+//			channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+//			System.out.println(" [x] Sent '" + message + "'");
+//
+//		}
 
-		}
+		String idx = "33333";
+		String pin = "517017400064199";
+		String serial = "10000995914628";
 
-		for (int i = 2; i < 5; i++) {
-			Row row = worksheet.getRow(i);
+		String message1 = idx + "_" + serial + "_" + pin;
+		channel.basicPublish("", QUEUE_NAME, null, message1.getBytes());
+		System.out.println(" [x] Sent '" + message1 + "'");
 
-			Cell cellpin = row.getCell(1);
-			Cell cellseri = row.getCell(2);
-
-			System.out.println(cellpin.getStringCellValue());
-			System.out.println(cellseri.getStringCellValue());
-			String message = idx + "_" + cellseri.getStringCellValue() + "_" + cellpin.getStringCellValue();
-
-			channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
-			System.out.println(" [x] Sent '" + message + "'");
-
-		}
-//		String message1 ="371_10001278845119_711993204354040";
 //		String message2 ="325_10001357226302_518223892571861";
 //		String message3 ="495_10001387143975_919897185276217";
 //		String message4 ="206_10001362629648_810057776416267";
 //		String message5 ="34_10001362629648_810057776416267" ;
 //		String message6 ="314_810057776416267_10001362629648";
 //		String message7 ="493_10001362629648_810057776416267";
-//		channel.basicPublish("", QUEUE_NAME, null, message1.getBytes());
-//		System.out.println(" [x] Sent '" + message1 + "'");
+
 //
 //		channel.basicPublish("", QUEUE_NAME, null, message2.getBytes());
 //		System.out.println(" [x] Sent '" + message2 + "'");

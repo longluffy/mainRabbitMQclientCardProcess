@@ -23,8 +23,9 @@ public class CardReceiver {
 
 	public static Cardservices cardService;
 
-	private final static String RECEIVE_QUEUE_NAME = "robux_request";
-	private final static String RESPONSE_QUEUE_NAME = "robux_result";
+	private final static String RECEIVE_QUEUE_NAME = "robux_requestLL";
+	private final static String RESPONSE_QUEUE_NAME = "robux_resultLL";
+	private final static String RESPONSE_Exchange_NAME = "robux_resultLL";
 
 	public static void main(String[] argv)
 			throws java.io.IOException, java.lang.InterruptedException, TimeoutException {
@@ -34,12 +35,15 @@ public class CardReceiver {
 		String password = "12345678";
 		String virtualHost = "/";
 		int portNumber = 5672;
-		String hostName = "192.168.1.3";
+		String hostName = "27.72.30.109";
 		factory.setUsername(userName);
 		factory.setPassword(password);
 		factory.setVirtualHost(virtualHost);
 		factory.setHost(hostName);
 		factory.setPort(portNumber);
+
+		System.out.println(
+				" [*] CardReceiver Waiting for messages on " + RECEIVE_QUEUE_NAME + "  . To exit press CTRL+C");
 
 		if (null == cardService) {
 			cardService = new Cardservices();
@@ -48,8 +52,6 @@ public class CardReceiver {
 		Channel channel = connection.createChannel();
 
 		channel.queueDeclare(RECEIVE_QUEUE_NAME, false, false, false, null);
-		System.out.println(
-				" [*] CardReceiver Waiting for messages on " + RECEIVE_QUEUE_NAME + "  . To exit press CTRL+C");
 
 		Consumer consumer = new DefaultConsumer(channel) {
 			@Override
@@ -109,7 +111,7 @@ public class CardReceiver {
 						cp.setCardavailable(0);
 						cp.setCardcheckresult("thẻ cào đã được nạp trước đó trên hệ thống");
 					}
-
+					cp.setCardavailable(0);
 					CardProcess cardAdded = cardService.addCardProcess(cp);
 
 					if (null == cp.getCardcheckresult() || cp.getCardcheckresult().isEmpty()) {
@@ -130,6 +132,12 @@ public class CardReceiver {
 					// TODO update result to db
 					System.out.println("cannot connect to checkcard services");
 					cp.setCardcheckresult("lỗi hệ thống check thẻ");
+					e.printStackTrace();
+					responseToRobux(factory, cp);
+				} catch (Exception e) {
+					// TODO update result to db
+					System.out.println("exceptions" + e.getMessage());
+					cp.setCardcheckresult(e.getMessage());
 					e.printStackTrace();
 					responseToRobux(factory, cp);
 				}
@@ -163,8 +171,12 @@ public class CardReceiver {
 			String jsonInString = gson.toJson(res);
 
 			Channel channel_res = connection_result.createChannel();
-			channel_res.queueDeclare(RESPONSE_QUEUE_NAME, false, false, false, null);
-			channel_res.basicPublish("", RESPONSE_QUEUE_NAME, null, jsonInString.getBytes());
+//			channel_res.queueDeclare(RESPONSE_QUEUE_NAME, false, false, false, null);
+//			channel_res.basicPublish("", RESPONSE_QUEUE_NAME, null, jsonInString.getBytes());
+
+			channel_res.exchangeDeclare(RESPONSE_Exchange_NAME, "fanout");
+			channel_res.basicPublish(RESPONSE_Exchange_NAME, "", null, jsonInString.getBytes());
+
 			System.out.println("Card Invalid");
 			System.out.println("result sent to " + RESPONSE_QUEUE_NAME + ": " + jsonInString);
 			channel_res.close();

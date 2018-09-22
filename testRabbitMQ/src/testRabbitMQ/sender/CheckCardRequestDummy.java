@@ -12,7 +12,7 @@ public class CheckCardRequestDummy {
 
 		Cardservices cs = new Cardservices();
 		CardProcess cp = null;
-		cp = cs.getCardInfobyId(428);
+		cp = cs.getCardInfobyId(543);
 
 		CheckcardServiceRequest checkcardServices = new CheckcardServiceRequest();
 		try {

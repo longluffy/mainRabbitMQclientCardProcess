@@ -1,5 +1,7 @@
 package testRabbitMQ.receiver;
 
+import java.math.BigInteger;
+
 import cardprocess.hibernate.CardProcess;
 import cardprocess.hibernate.Cardservices;
 import cardprocess.hibernate.ChargeAccount;
@@ -24,9 +26,9 @@ public class testNapthe {
 		CardProcess cardSaved = cs.getCardInfoFromSerial("10001182915148");
 
 		// TODO Auto-generated method stub
-		ChargeAccount accountreceiver = cs.selectchargeaccount();
+		ChargeAccount accountreceiver = cs.selectReceiveAccount(BigInteger.valueOf(10000l));
 
-		MyViettelAccount mvtaccNapthe = cs.selectAccountForNapThe();
+		MyViettelAccount mvtaccNapthe = cs.selectAccountForNapTheAndroid();
 
 		if (null == mvtaccNapthe) {
 			result_msg = message + "out of myviettelAccountCheck";

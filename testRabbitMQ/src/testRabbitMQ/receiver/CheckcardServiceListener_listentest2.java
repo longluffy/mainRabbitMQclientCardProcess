@@ -29,9 +29,11 @@ import testRabbitMQ.sender.CheckcardServiceRequest;
 
 public class CheckcardServiceListener_listentest2 {
 	private final static String CHECKCARD_RESPONSE_QUEUE_NAME = "CheckcardService_response";
-	private final static String RESPONSE_QUEUE_NAME = "robux_result";
+	private final static String RESPONSE_QUEUE_NAME = "robux_resultLL";
+	private final static String RESPONSE_Exchange_NAME = "robux_resultLL";
+	
 	private static Cardservices cardService;
-	private final static String PATH_TO_EXE_SELENIUM = "C:\\Users\\Admin\\git\\mainRabbitMQClient\\testRabbitMQ\\tool\\phantomjs2\\phantomjs.exe";
+	private final static String PATH_TO_EXE_SELENIUM = "C:\\Users\\Longluffy\\git\\mainRabbitMQclientCardProcess\\testRabbitMQ\\tool\\phantomjs2\\phantomjs.exe";
 
 	public static void main(String[] argv)
 			throws java.io.IOException, java.lang.InterruptedException, TimeoutException {
@@ -41,7 +43,7 @@ public class CheckcardServiceListener_listentest2 {
 		String password = "robuxreceiver";
 		String virtualHost = "/";
 		int portNumber = 5672;
-		String hostName = "27.72.30.109";
+		String hostName = "192.168.1.3";
 
 		factory.setUsername(userName);
 		factory.setPassword(password);
@@ -56,6 +58,7 @@ public class CheckcardServiceListener_listentest2 {
 		}
 
 		channel.queueDeclare(CHECKCARD_RESPONSE_QUEUE_NAME, false, false, false, null);
+		
 		System.out.println(" [*] Direct card Process listener is waiting for messages on "
 				+ CHECKCARD_RESPONSE_QUEUE_NAME + ". To exit press CTRL+C");
 
@@ -189,6 +192,8 @@ public class CheckcardServiceListener_listentest2 {
 					} else if (cardSaved.getCardcheckresult().contains("Not in GZIP format")) {
 						cardSaved.setCardcheckresult("lỗi hệ thống check thẻ");
 						responseToRobux(factory, cardSaved);
+					}else {
+						responseToRobux(factory, cardSaved);
 					}
 				}
 
@@ -210,7 +215,20 @@ public class CheckcardServiceListener_listentest2 {
 	private static void responseToRobux(ConnectionFactory factory, CardProcess cardResult) throws IOException {
 		Connection connection_result;
 		try {
-			connection_result = factory.newConnection();
+			ConnectionFactory factory1 = new ConnectionFactory();
+			String userName = "longluffy";
+			String password = "12345678";
+			String virtualHost = "/";
+			int portNumber = 5672;
+			String hostName = "192.168.1.3";
+
+			factory1.setUsername(userName);
+			factory1.setPassword(password);
+			factory1.setVirtualHost(virtualHost);
+			factory1.setHost(hostName);
+			factory1.setPort(portNumber);
+			
+			connection_result = factory1.newConnection();
 
 			CardresponseRobux res = new CardresponseRobux();
 			res.setId(cardResult.getSrc_msg());
@@ -224,8 +242,11 @@ public class CheckcardServiceListener_listentest2 {
 			String jsonInString = gson.toJson(res);
 
 			Channel channel_res = connection_result.createChannel();
-			channel_res.queueDeclare(RESPONSE_QUEUE_NAME, false, false, false, null);
-			channel_res.basicPublish("", RESPONSE_QUEUE_NAME, null, jsonInString.getBytes());
+			channel_res.exchangeDeclare(RESPONSE_Exchange_NAME, "fanout");
+			
+			
+			//channel_res.queueDeclare(RESPONSE_QUEUE_NAME, false, false, false, null);
+			channel_res.basicPublish(RESPONSE_Exchange_NAME, "", null, jsonInString.getBytes());
 			System.out.println("result sent to " + RESPONSE_QUEUE_NAME + ": " + jsonInString);
 			channel_res.close();
 			connection_result.close();

@@ -8,6 +8,7 @@ import cardprocess.hibernate.Cardservices;
 import com.rabbitmq.client.Connection;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -30,7 +31,7 @@ public class checkcardResponseDummy {
 		String value = "100000";
 		String pin = "4172055505694213";
 		String serial = "1000118191521423";
-		String id ="348";
+		String id ="548";
 		
 		factory.setUsername(userName);
 		factory.setPassword(password);
@@ -40,8 +41,8 @@ public class checkcardResponseDummy {
 
 		Cardservices cs = new Cardservices();
 		CardProcess cp = null;
-		cp= cs.getCardInfobyId(321);
-		
+		cp= cs.getCardInfobyId(550);
+		cp.setCardvalue(BigInteger.valueOf(10000l));
 		byte[] data = SerializationUtils.serialize(cp);
 		
 		
@@ -57,6 +58,7 @@ public class checkcardResponseDummy {
 
 		channel.close();
 		connection.close();
+		System.exit(0);
 	}
 
 }
