@@ -43,7 +43,7 @@ public class CheckcardServiceListener_listentest {
 		String password = "robuxreceiver";
 		String virtualHost = "/";
 		int portNumber = 5672;
-		String hostName = "192.168.1.3";
+		String hostName = "27.72.30.109";
 
 		factory.setUsername(userName);
 		factory.setPassword(password);
